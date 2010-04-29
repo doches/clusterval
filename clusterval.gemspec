@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "bin/clusterval",
+     "lib/clusterval.rb",
      "test/clusterval_test.rb",
      "test/test_helper.rb"
   ]

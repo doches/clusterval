@@ -1,41 +1,44 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__),"..","lib")
 require 'clusterval'
+require 'optparse'
 
 include Clusterval
 
-if __FILE__ == $0
-  require 'optparse'
+options = {}
+hack = nil
+OptionParser.new do |opts|
+  opts.banner = "Usage: clusterval [options]"
   
-  options = {}
-  hack = nil
-  OptionParser.new do |opts|
-    opts.banner = "Usage: clusterval [options]"
-    
-    opts.on("-g","--gold FILENAME","(required) Load gold clustering from FILENAME") do |file|
-      options[:gold] = file
-    end
-    
-    opts.on("-c","--candidate FILENAME", "(required) Load candidate clustering from FILENAME") do |file|
-      options[:candidate] = file
-    end
-    
-    opts.on_tail("-h","--help","Show this help") do
-      puts opts
-      exit
-    end
-    
-    hack = opts
-  end.parse!
+  opts.on("-g","--gold FILENAME","(required) Load gold clustering from FILENAME") do |file|
+    options[:gold] = file
+  end
   
-  if options[:gold].nil? or options[:candidate].nil?
-    puts hack
+  opts.on("-c","--candidate FILENAME", "(required) Load candidate clustering from FILENAME") do |file|
+    options[:candidate] = file
+  end
+  
+  opts.on_tail("-h","--help","Show this help") do
+    puts opts
     exit
   end
   
-  gold = Clustering.new(options[:gold])
-  candidate = Clustering.new(options[:candidate])
-  
-  puts candidate.F_score(gold)
+  hack = opts
+end.parse!
+
+if options[:gold].nil? or options[:candidate].nil?
+  puts hack
+  exit
 end
 
+[:gold, :candidate].each do |k| 
+	if not File.exists?(options[k])
+		STDERR.puts "Input file '#{options[k]}' does not exist."
+		exit(1)
+	end
+end
+
+gold = Clustering.new(options[:gold])
+candidate = Clustering.new(options[:candidate])
+
+puts candidate.F_score(gold)
