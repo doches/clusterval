@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "clusterval"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Unsupervised evaluation of clusters using F-Score}
+    gem.description = %Q{Given two clusterings over a set of items, calculate an objective scoring (F-Score) for how well one matches the other. Uses the method described in "Semeval-2007 Task 02: Evaluating Word Sense Induction and Discrimination Systems", E. Agirre and A. Soroa.}
     gem.email = "doches@gmail.com"
     gem.homepage = "http://github.com/doches/clusterval"
     gem.authors = ["Trevor Fountain"]
@@ -40,6 +40,8 @@ task :test => :check_dependencies
 
 task :default => :test
 
+gem 'rdoc'
+require 'rdoc'
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
   if File.exist?('VERSION')
@@ -52,4 +54,6 @@ Rake::RDocTask.new do |rdoc|
   rdoc.title = "clusterval #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
+  rdoc.main = "README.rdoc"
+  rdoc.options += %w{-SHN -f darkfish}
 end

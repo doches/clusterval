@@ -1,6 +1,10 @@
 = clusterval
 
-Description goes here.
+Clusterval is a tool for performing unsupervised analysis of automatically generated clusters.
+It's useful in the case where you have a gold standard clustering over a set of items and you would like to see
+how well some other, probably learned, clustering aligns with the gold standard. It provides a single command,
+<tt>clusterval</tt>, that prints the F-Score of a clustering compared to some gold standard (<tt>clusterval -h</tt> for usage information)
+to stdout.
 
 == Note on Patches/Pull Requests
  
@@ -10,7 +14,7 @@ Description goes here.
   future version unintentionally.
 * Commit, do not mess with rakefile, version, or history.
   (if you want to have your own version, that is fine but
-   bump version in a commit by itself I can ignore when I pull)
+  bump version in a commit by itself I can ignore when I pull)
 * Send me a pull request. Bonus points for topic branches.
 
 == Copyright
