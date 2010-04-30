@@ -12,6 +12,39 @@ class ClustervalTest < Test::Unit::TestCase
 	
 	end
 	
+	def test_yaml
+		c = create_temp_cluster("A B C","D E F")
+		fout = File.open("temp.yaml","w")
+		fout.puts c.to_yaml
+		fout.close
+		
+		x = Clustering.new("temp.yaml")
+		assert_equal(c.items.size,x.items.size)
+		assert_equal(c.size,x.size)	
+		`rm temp.yaml`
+	end
+	
+	def test_empty
+		a = Cluster.new("foo bar baz")
+		b = Cluster.new("a b c","lbl")
+		c = Clustering.new
+		assert_nothing_raised { c.add a }
+		assert_nothing_raised { c.add b }
+		
+		assert_equal(2,c.size)
+		assert_equal(6,c.items.size)
+	end
+	
+	def test_to_s
+		a = Cluster.new("foo bar baz")
+		assert_equal(":foo bar baz",a.to_s)
+		b = Cluster.new("a b c_c","lbl")
+		assert_equal("lbl:a b c_c",b.to_s)
+		
+		c = create_temp_cluster("A:1 2 3","B:4 5 6")
+		assert_equal("A:1 2 3\nB:4 5 6",c.to_s)
+	end
+	
   def test_load
   	# Create a sample input file
   	fout = File.open("test.cluster","w")
@@ -59,7 +92,12 @@ class ClustervalTest < Test::Unit::TestCase
   def create_temp_cluster(*strings)
   	filename="temp.cluster"
   	fout = File.open(filename,"w")
-  	strings.each { |str| fout.puts ":#{str}" }
+  	strings.each do |str|
+  		if not str.include?(":")
+  			str = ":#{str}"
+  		end
+  		fout.puts "#{str}"
+  	end
   	fout.close
   	cluster = Clustering.new(filename)
   	`rm #{filename}`

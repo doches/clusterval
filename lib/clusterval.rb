@@ -1,5 +1,4 @@
-#!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__),"..","lib")
+require 'yaml'
 
 module Clusterval
 
@@ -16,12 +15,25 @@ class Clustering
 	#   [optional label] : item1 item2 item3 ...
 	#   [optional label] : item2 item_with_spaces item 4
 	#   ...
-	def initialize(filename)
-		if filename =~ /ya?ml$/
-			raise "YAML loading not implemented!"
+	#
+	# If <tt>filename</tt> is nil, create an empty clustering of the zero items into zero clusters.
+	def initialize(filename=nil)
+		if filename.nil?
+			@clusters = []
+			@items = []
+		elsif filename =~ /ya?ml$/
+			temp = YAML.load_file(filename)
+			@clusters = temp.clusters
+			@items = temp.items
 		else # Load from custom file format
 			load_from_file(filename)
 		end
+	end
+	
+	# Add a cluster to this Clustering
+	def add(cluster)
+		@clusters.push cluster
+		@items = @items | cluster.items
 	end
 	
 	# Returns the number of clusters in this Clustering.
@@ -60,6 +72,11 @@ class Clustering
 	# Calculate the F-Score between this clustering and a gold standard clustering
 	def F_score(gold)
 		Clustering.F_score(gold,self)
+	end
+	
+	# Get a string representation of this Clustering (in the same format as the expected input to Clustering#new
+	def to_s
+		@clusters.map { |x| x.to_s }.join("\n")
 	end
 	
 	private
@@ -115,41 +132,11 @@ class Cluster
 	def has_label?
 		not @label.nil?
 	end
-end
-
-if __FILE__ == $0
-	require 'optparse'
 	
-	options = {}
-	hack = nil
-	OptionParser.new do |opts|
-		opts.banner = "Usage: clusterval [options]"
-		
-		opts.on("-g","--gold FILENAME","(required) Load gold clustering from FILENAME") do |file|
-			options[:gold] = file
-		end
-		
-		opts.on("-c","--candidate FILENAME", "(required) Load candidate clustering from FILENAME") do |file|
-			options[:candidate] = file
-		end
-		
-		opts.on_tail("-h","--help","Show this help") do
-			puts opts
-			exit
-		end
-		
-		hack = opts
-	end.parse!
-	
-	if options[:gold].nil? or options[:candidate].nil?
-		puts hack
-		exit
+	# Get a string representation of this Cluster. Used by Clustering#to_s.
+	def to_s
+		"#{@label}:#{@items.map { |x| x.to_s }.join(' ')}"
 	end
-	
-	gold = Clustering.new(options[:gold])
-	candidate = Clustering.new(options[:candidate])
-	
-	puts candidate.F_score(gold)
 end
 
 end
