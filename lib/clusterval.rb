@@ -82,7 +82,7 @@ class Clustering
 	
 	# Find the F-Score of a single cluster from the gold clustering.
 	def Clustering.F_single(cluster,clustering)
-		clustering.clusters.map { |other_cluster| Clustering.f(cluster,other_cluster) }.reject { |x| x.nan? }.sort.pop
+		clustering.clusters.map { |other_cluster| Clustering.f(cluster,other_cluster) }.reject { |x| x.nan? }.sort.pop || 0.0
 	end
 	
 	# Calculate the F-Score between two clusterings
