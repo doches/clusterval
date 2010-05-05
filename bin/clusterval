@@ -5,7 +5,7 @@ require 'optparse'
 
 include Clusterval
 
-options = {}
+options = {:clean => false}
 hack = nil
 OptionParser.new do |opts|
   opts.banner = "Usage: clusterval [options]"
@@ -16,6 +16,10 @@ OptionParser.new do |opts|
   
   opts.on("-c","--candidate FILENAME", "(required) Load candidate clustering from FILENAME") do |file|
     options[:candidate] = file
+  end
+  
+  opts.on("-s","--strict","Do not allow items to appear in multiple clusters") do 
+  	options[:clean] = true
   end
   
   opts.on_tail("-h","--help","Show this help") do
@@ -38,7 +42,7 @@ end
 	end
 end
 
-gold = Clustering.new(options[:gold])
-candidate = Clustering.new(options[:candidate])
+gold = Clustering.new(options[:gold],options[:clean])
+candidate = Clustering.new(options[:candidate],options[:clean])
 
 puts candidate.F_score(gold)

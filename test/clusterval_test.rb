@@ -5,11 +5,24 @@ class ClustervalTest < Test::Unit::TestCase
 	include Clusterval
 
 	def setup
-		
+		@clean = false
 	end
 	
 	def teardown
 	
+	end
+	
+	def test_cleanup
+		@clean = true
+		c = create_temp_cluster("A B C","D E F A")
+		assert_equal(3, c.clusters[1].size)
+	end
+	
+	def test_randomize
+		c = create_temp_cluster("A B C","D E F")
+		r = c.randomize
+		assert_equal(c.items.size,r.items.size)
+		assert_equal(c.size,r.size)
 	end
 	
 	def test_yaml
@@ -89,21 +102,6 @@ class ClustervalTest < Test::Unit::TestCase
   	assert_equal(0.8, Clustering.f(a,b))
   end
   
-  def create_temp_cluster(*strings)
-  	filename="temp.cluster"
-  	fout = File.open(filename,"w")
-  	strings.each do |str|
-  		if not str.include?(":")
-  			str = ":#{str}"
-  		end
-  		fout.puts "#{str}"
-  	end
-  	fout.close
-  	cluster = Clustering.new(filename)
-  	`rm #{filename}`
-  	return cluster
-  end
-  
   def test_F
   	a = create_temp_cluster("1 2 3","4 5 6")
   	b = create_temp_cluster("1 2","3 5 6","4")
@@ -117,6 +115,15 @@ class ClustervalTest < Test::Unit::TestCase
   	assert_in_delta(11.0/15, Clustering.F_score(a,b),0.0001)
   end
   
+  def test_identity_fscore
+  	a = create_temp_cluster("1 2 3","4 5","6 7 8 9","10 11 12 13")
+  	assert_equal(1.0, Clustering.F_score(a,a))
+  	10.times do 
+  		t = a.randomize
+  		assert_in_delta(1.0,t.F_score(t),0.000001)
+  	end
+  end
+  
   def test_cluster
   	a = Cluster.new("foo bar baz")
   	assert_equal(3, a.items.size)
@@ -124,4 +131,22 @@ class ClustervalTest < Test::Unit::TestCase
   	assert_nil(a.label)
   	assert(!a.has_label?)
   end
+  
+  #### Helper functions
+  
+  def create_temp_cluster(*strings)
+  	filename="temp.cluster"
+  	fout = File.open(filename,"w")
+  	strings.each do |str|
+  		if not str.include?(":")
+  			str = ":#{str}"
+  		end
+  		fout.puts "#{str}"
+  	end
+  	fout.close
+  	cluster = Clustering.new(filename,@clean)
+  	`rm #{filename}`
+  	return cluster
+  end
+  
 end

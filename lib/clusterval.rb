@@ -17,7 +17,9 @@ class Clustering
 	#   ...
 	#
 	# If <tt>filename</tt> is nil, create an empty clustering of the zero items into zero clusters.
-	def initialize(filename=nil)
+	# 
+	# If <tt>clean</tt> is true, do not allow identical items to appear in multiple clusters.
+	def initialize(filename=nil,clean=false)
 		if filename.nil?
 			@clusters = []
 			@items = []
@@ -26,7 +28,7 @@ class Clustering
 			@clusters = temp.clusters
 			@items = temp.items
 		else # Load from custom file format
-			load_from_file(filename)
+			load_from_file(filename,clean)
 		end
 	end
 	
@@ -39,6 +41,25 @@ class Clustering
 	# Returns the number of clusters in this Clustering.
 	def size
 		@clusters.size
+	end
+	
+	# Create a new clustering with the same items and # of clusters as this one, but
+	# in which items have been assigned to clusters randomly
+	def randomize
+		new = Clustering.new
+		clusters = Array.new(@clusters.size,nil).map { |x| [] }
+		@clusters.each_with_index do |cluster,i|
+			cluster.items.each do |item|
+				index = (rand*clusters.size).to_i
+				clusters[index].push item
+			end
+		end
+		while clusters.reject { |x| x.size != 0 }.size > 0
+			sorted = clusters.sort { |a,b| a.size <=> b.size }
+			sorted[0].push sorted.pop.pop
+		end
+		clusters.map { |list| Cluster.new(list.map { |x| x.to_sym },nil) }.each { |c| new.add(c) }
+		return new
 	end
 	
 	# Calculate the precision of Cluster b w.r.t. Cluster a
@@ -82,16 +103,20 @@ class Clustering
 	private
 	
 	# Load from a custom file format
-	def load_from_file(filename)
+	def load_from_file(filename,clean)
 		begin
 			@clusters = []
 			@items = []
 			
 			IO.foreach(filename) do |line|
 				label, items = *line.split(":",2).map { |x| x.strip }
-				cluster = Cluster.new(items,label)
-				@items = @items | cluster.items
-				@clusters.push cluster
+				items = items.split(" ").map { |x| x.to_sym }
+				items = items - @items if clean
+				if items.size > 0
+					cluster = Cluster.new(items,label)
+					@items = @items | cluster.items
+					@clusters.push cluster
+				end
 			end
 		rescue IOError
 			raise $!
@@ -113,7 +138,7 @@ class Cluster
 				raise "Cluster#initialize expects an array or a space-delimited String as the first argument; given a String of length zero!"
 			end
 			items = items.split(" ").map { |x| x.strip.to_sym }
-		elsif items.responds_to?(:map)
+		elsif items.respond_to?(:map)
 			items = items.map { |x| x.to_sym }
 		else
 			raise "Cluster#initialize expects an array or a space-delimited String as the first argument; given #{items.class}"
@@ -121,6 +146,11 @@ class Cluster
 	
 		@items = items
 		@label = label
+	end
+	
+	# Add an item to this cluster
+	def add(item)
+		@items.push item.to_sym
 	end
 	
 	# Returns the number of items in this Cluster
