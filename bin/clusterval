@@ -5,7 +5,7 @@ require 'optparse'
 
 include Clusterval
 
-options = {:clean => false}
+options = {:clean => false,:map => false}
 hack = nil
 OptionParser.new do |opts|
   opts.banner = "Usage: clusterval [options]"
@@ -20,6 +20,10 @@ OptionParser.new do |opts|
   
   opts.on("-s","--strict","Do not allow items to appear in multiple clusters") do 
   	options[:clean] = true
+  end
+  
+  opts.on("-m","--print-map","Print the map of candidate clusters onto their best gold cluster") do
+  	options[:map] = true
   end
   
   opts.on_tail("-h","--help","Show this help") do
@@ -44,5 +48,16 @@ end
 
 gold = Clustering.new(options[:gold],options[:clean])
 candidate = Clustering.new(options[:candidate],options[:clean])
+
+if options[:map]
+	candidate.clusters.each do |candidate_cluster|
+		best = nil
+		gold.clusters.each do |gold_cluster|
+			score = Clustering.f(candidate_cluster,gold_cluster)
+			best = [gold_cluster,score] if (best.nil? or score > best[1] and not score.nan?)
+		end
+		puts "#{candidate_cluster.label} -> #{best[0].label} (#{best[1]})"
+	end
+end
 
 puts candidate.F_score(gold)

@@ -9,7 +9,31 @@ class ClustervalTest < Test::Unit::TestCase
 	end
 	
 	def teardown
+		`rm temp.yaml` if File.exists?("temp.yaml")
+	end
 	
+	def test_hash_file
+		hash = {:a => [1,2,3], :b => [4,5,6]}
+		fout = File.open("temp.yaml","w")
+		fout.puts hash.to_yaml
+		fout.close
+
+		c = Clustering.new("temp.yaml")
+
+		assert_equal(2, c.size)
+		assert_equal(3, c.clusters[0].size)
+		assert_equal(hash[:a],c.clusters[0].items)
+		assert_equal([1,2,3,4,5,6],c.items)
+	end
+	
+	def test_hash
+		hash = {:a => [1,2,3], :b => [4,5,6]}
+		c = Clustering.new(hash)
+		
+		assert_equal(2, c.size)
+		assert_equal(3, c.clusters[0].size)
+		assert_equal(hash[:a],c.clusters[0].items)
+		assert_equal([1,2,3,4,5,6],c.items)
 	end
 	
 	def test_cleanup
@@ -34,7 +58,6 @@ class ClustervalTest < Test::Unit::TestCase
 		x = Clustering.new("temp.yaml")
 		assert_equal(c.items.size,x.items.size)
 		assert_equal(c.size,x.size)	
-		`rm temp.yaml`
 	end
 	
 	def test_empty

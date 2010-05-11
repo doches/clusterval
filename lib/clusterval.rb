@@ -16,6 +16,11 @@ class Clustering
 	#   [optional label] : item2 item_with_spaces item 4
 	#   ...
 	#
+	# Alternatively, if <tt>filename</tt> contains a Hash which has been dumped with to_yaml, load
+	# it and create a clustering based on the Hash.
+	#
+	# If <tt>filename</tt> is itself a Hash (I know, it's weird), create a clustering based on the hash.
+	#
 	# If <tt>filename</tt> is nil, create an empty clustering of the zero items into zero clusters.
 	# 
 	# If <tt>clean</tt> is true, do not allow identical items to appear in multiple clusters.
@@ -23,10 +28,16 @@ class Clustering
 		if filename.nil?
 			@clusters = []
 			@items = []
+		elsif filename.is_a?(Hash)
+			load_from_hash(filename)
 		elsif filename =~ /ya?ml$/
 			temp = YAML.load_file(filename)
-			@clusters = temp.clusters
-			@items = temp.items
+			if temp.is_a?(Clustering)
+				@clusters = temp.clusters
+				@items = temp.items
+			elsif temp.is_a?(Hash)
+				load_from_hash(temp)
+			end
 		else # Load from custom file format
 			load_from_file(filename,clean)
 		end
@@ -122,6 +133,17 @@ class Clustering
 			raise $!
 		end
 	end
+	
+	def load_from_hash(hash)
+		@clusters = []
+		@items = []
+		
+		hash.each_pair do |key,list|
+			cluster = Cluster.new(list,key)
+			@items = @items | cluster.items
+			@clusters.push cluster
+		end
+	end
 end
 
 # A single Cluster containing some number of items with a single optional label
@@ -139,7 +161,7 @@ class Cluster
 			end
 			items = items.split(" ").map { |x| x.strip.to_sym }
 		elsif items.respond_to?(:map)
-			items = items.map { |x| x.to_sym }
+			items = items.map { |x| x.to_sym.nil? ? x : x.to_sym }
 		else
 			raise "Cluster#initialize expects an array or a space-delimited String as the first argument; given #{items.class}"
 		end
