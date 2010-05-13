@@ -124,6 +124,7 @@ class Clustering
 				items = items.split(" ").map { |x| x.to_sym }
 				items = items - @items if clean
 				if items.size > 0
+					items.reject! { |x| @items.include?(x) }
 					cluster = Cluster.new(items,label)
 					@items = @items | cluster.items
 					@clusters.push cluster
@@ -139,6 +140,8 @@ class Clustering
 		@items = []
 		
 		hash.each_pair do |key,list|
+			list.map! { |x| x.to_sym }
+			list.reject! { |x| @items.include?(x) }
 			cluster = Cluster.new(list,key)
 			@items = @items | cluster.items
 			@clusters.push cluster
