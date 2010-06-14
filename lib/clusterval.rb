@@ -119,6 +119,8 @@ class Clustering
 			@clusters = []
 			@items = []
 			
+			raise IOError.new("#{filename} not found") if not File.exists?(filename)
+			
 			IO.foreach(filename) do |line|
 				label, items = *line.split(":",2).map { |x| x.strip }
 				items = items.split(" ").map { |x| x.to_sym }
