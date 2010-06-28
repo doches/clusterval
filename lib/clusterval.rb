@@ -137,7 +137,7 @@ class Clustering
 			
 			IO.foreach(filename) do |line|
 				label, items = *line.split(":",2).map { |x| x.strip }
-				items = items.split(" ").map { |x| x.to_sym }
+				items = items.split(" ").map { |x| (x.respond_to?(:to_sym) and not x.to_sym.nil?) ? x.to_sym : x }
 				items = items - @items if clean
 				if items.size > 0
 					items.reject! { |x| @items.include?(x) }
@@ -156,7 +156,7 @@ class Clustering
 		@items = []
 		
 		hash.each_pair do |key,list|
-			list.map! { |x| x.to_sym }
+			list.map! { |x| (x.respond_to?(:to_sym) and not x.to_sym.nil?) ? x.to_sym : x }
 			list.reject! { |x| @items.include?(x) }
 			cluster = Cluster.new(list,key)
 			@items = @items | cluster.items
@@ -191,7 +191,7 @@ class Cluster
 	
 	# Add an item to this cluster
 	def add(item)
-		@items.push item.to_sym
+		@items.push (item.to_sym.nil? ? item : item.to_sym)
 	end
 	
 	# Returns the number of items in this Cluster
