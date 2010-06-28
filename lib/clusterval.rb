@@ -56,9 +56,10 @@ class Clustering
 	
 	# Create a new clustering with the same items and # of clusters as this one, but
 	# in which items have been assigned to clusters randomly
-	def randomize
+	def randomize(target_size=nil)
+		target_size ||= @clusters.size
 		new = Clustering.new
-		clusters = Array.new(@clusters.size,nil).map { |x| [] }
+		clusters = Array.new(target_size,nil).map { |x| [] }
 		@clusters.each_with_index do |cluster,i|
 			cluster.items.each do |item|
 				index = (rand*clusters.size).to_i
@@ -98,6 +99,19 @@ class Clustering
 	
 	# Calculate the F-Score between two clusterings
 	def Clustering.F_score(gold, candidate)
+		# First we need to ensure that the candidate contains all of the items of the gold, adding them
+		# to a dummy cluster in candidate if necessary...
+		dummy = Cluster.new([],"missing")
+		gold.items.each do |gold_item|
+			if not candidate.items.include?(gold_item)
+				dummy.add(gold_item)
+			end
+		end
+		if dummy.size > 0
+			candidate.clusters.push dummy
+			candidate.items.push dummy.items
+			candidate.items.flatten!
+		end
 		gold.clusters.inject(0) { |s,cluster| s += (cluster.size.to_f / candidate.items.size) * Clustering.F_single(cluster, candidate) }
 	end
 	
