@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{clusterval}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Trevor Fountain"]
-  s.date = %q{2010-06-28}
+  s.date = %q{2010-06-30}
   s.default_executable = %q{clusterval}
   s.description = %q{Given two clusterings over a set of items, calculate an objective scoring (F-Score) for how well one matches the other. Uses the method described in "Semeval-2007 Task 02: Evaluating Word Sense Induction and Discrimination Systems", E. Agirre and A. Soroa.}
   s.email = %q{doches@gmail.com}
