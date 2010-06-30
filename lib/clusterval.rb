@@ -180,7 +180,7 @@ class Cluster
 			end
 			items = items.split(" ").map { |x| x.strip.to_sym }
 		elsif items.respond_to?(:map)
-			items = items.map { |x| x.to_sym.nil? ? x : x.to_sym }
+			items = items.map { |x| (x.respond_to?(:to_sym) and not x.to_sym.nil?) ? x.to_sym : x }
 		else
 			raise "Cluster#initialize expects an array or a space-delimited String as the first argument; given #{items.class}"
 		end
@@ -191,7 +191,7 @@ class Cluster
 	
 	# Add an item to this cluster
 	def add(item)
-		@items.push (item.to_sym.nil? ? item : item.to_sym)
+		@items.push(item.to_sym.nil? ? item : item.to_sym)
 	end
 	
 	# Returns the number of items in this Cluster
