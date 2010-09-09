@@ -98,7 +98,7 @@ class Clustering
 	
 	# Calculate the F-Score between two clusterings
 	def Clustering.F_score(gold, candidate)
-		gold.clusters.inject(0) { |s,cluster| s += (cluster.size.to_f / candidate.items.size) * Clustering.F_single(cluster, candidate) }
+		gold.clusters.inject(0) { |s,cluster| s += (cluster.size.to_f / candidate.items.size) *  Clustering.F_single(cluster, candidate) }
 	end
 	
 	# Calculate the F-Score between this clustering and a gold standard clustering
@@ -134,7 +134,7 @@ class Clustering
 			raise $!
 		end
 	end
-	
+
 	def load_from_hash(hash)
 		@clusters = []
 		@items = []
