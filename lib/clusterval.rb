@@ -56,9 +56,10 @@ class Clustering
 	
 	# Create a new clustering with the same items and # of clusters as this one, but
 	# in which items have been assigned to clusters randomly
-	def randomize
+	def randomize(target_size=nil)
+		target_size ||= @clusters.size
 		new = Clustering.new
-		clusters = Array.new(@clusters.size,nil).map { |x| [] }
+		clusters = Array.new(target_size,nil).map { |x| [] }
 		@clusters.each_with_index do |cluster,i|
 			cluster.items.each do |item|
 				index = (rand*clusters.size).to_i
@@ -98,7 +99,20 @@ class Clustering
 	
 	# Calculate the F-Score between two clusterings
 	def Clustering.F_score(gold, candidate)
-		gold.clusters.inject(0) { |s,cluster| s += (cluster.size.to_f / candidate.items.size) *  Clustering.F_single(cluster, candidate) }
+		# First we need to ensure that the candidate contains all of the items of the gold, adding them
+		# to a dummy cluster in candidate if necessary...
+		dummy = Cluster.new([],"missing")
+		gold.items.each do |gold_item|
+			if not candidate.items.include?(gold_item)
+				dummy.add(gold_item)
+			end
+		end
+		if dummy.size > 0
+			candidate.clusters.push dummy
+			candidate.items.push dummy.items
+			candidate.items.flatten!
+		end
+		gold.clusters.inject(0) { |s,cluster| s += (cluster.size.to_f / candidate.items.size) * Clustering.F_single(cluster, candidate) }
 	end
 	
 	# Calculate the F-Score between this clustering and a gold standard clustering
@@ -119,9 +133,11 @@ class Clustering
 			@clusters = []
 			@items = []
 			
+			raise IOError.new("#{filename} not found") if not File.exists?(filename)
+			
 			IO.foreach(filename) do |line|
 				label, items = *line.split(":",2).map { |x| x.strip }
-				items = items.split(" ").map { |x| x.to_sym }
+				items = items.split(" ").map { |x| (x.respond_to?(:to_sym) and not x.to_sym.nil?) ? x.to_sym : x }
 				items = items - @items if clean
 				if items.size > 0
 					items.reject! { |x| @items.include?(x) }
@@ -140,7 +156,7 @@ class Clustering
 		@items = []
 		
 		hash.each_pair do |key,list|
-			list.map! { |x| x.to_sym }
+			list.map! { |x| (x.respond_to?(:to_sym) and not x.to_sym.nil?) ? x.to_sym : x }
 			list.reject! { |x| @items.include?(x) }
 			cluster = Cluster.new(list,key)
 			@items = @items | cluster.items
@@ -164,7 +180,7 @@ class Cluster
 			end
 			items = items.split(" ").map { |x| x.strip.to_sym }
 		elsif items.respond_to?(:map)
-			items = items.map { |x| x.to_sym.nil? ? x : x.to_sym }
+			items = items.map { |x| (x.respond_to?(:to_sym) and not x.to_sym.nil?) ? x.to_sym : x }
 		else
 			raise "Cluster#initialize expects an array or a space-delimited String as the first argument; given #{items.class}"
 		end
@@ -175,7 +191,7 @@ class Cluster
 	
 	# Add an item to this cluster
 	def add(item)
-		@items.push item.to_sym
+		@items.push(item.to_sym.nil? ? item : item.to_sym)
 	end
 	
 	# Returns the number of items in this Cluster
