@@ -22,8 +22,8 @@ class ClustervalTest < Test::Unit::TestCase
 
 		assert_equal(2, c.size)
 		assert_equal(3, c.clusters[0].size)
-		assert_equal(hash[:a],c.clusters[0].items)
-		assert_equal([1,2,3,4,5,6],c.items)
+		assert_equal(hash[:a],c.clusters[1].items)
+		assert_equal([4,5,6,1,2,3],c.items)
 	end
 	
 	def test_hash
@@ -32,8 +32,8 @@ class ClustervalTest < Test::Unit::TestCase
 		
 		assert_equal(2, c.size)
 		assert_equal(3, c.clusters[0].size)
-		assert_equal(hash[:a],c.clusters[0].items)
-		assert_equal([1,2,3,4,5,6],c.items)
+		assert_equal(hash[:a],c.clusters[1].items)
+		assert_equal([4,5,6,1,2,3],c.items)
 	end
 	
 	def test_cleanup
